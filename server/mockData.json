@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "title": "Software Engineer",
+    "field": "Technology",
+    "automationScore": 35,
+    "predictions": {
+      "5y": "Low Impact - AI assists coding",
+      "10y": "Medium Impact - AI generates boilerplate, focus shifts to architecture",
+      "20y": "High Impact - Natural language programming dominates"
+    },
+    "humanEdge": "Complex system architecture, creative problem solving, stakeholder management"
+  },
+  {
+    "id": "2",
+    "title": "Data Entry Clerk",
+    "field": "Administration",
+    "automationScore": 95,
+    "predictions": {
+      "5y": "High Impact - Most tasks automated",
+      "10y": "Obsolete - Fully automated pipelines",
+      "20y": "Non-existent"
+    },
+    "humanEdge": "Handling physical documents (rare), exception handling"
+  },
+  {
+    "id": "3",
+    "title": "Graphic Designer",
+    "field": "Creative Arts",
+    "automationScore": 60,
+    "predictions": {
+      "5y": "Medium Impact - AI generation tools common",
+      "10y": "High Impact - AI creates variations, humans curate",
+      "20y": "Hybrid - AI/Human collaboration is standard"
+    },
+    "humanEdge": "Brand strategy, emotional connection, novel artistic direction"
+  }
+]
