@@ -10,21 +10,24 @@ const Search = ({ onSearch }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto mb-12">
+    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto mb-12 relative z-10">
       <div className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-        <div className="relative flex items-center bg-secondary rounded-lg p-2">
-          <SearchIcon className="w-6 h-6 text-gray-400 ml-3" />
+        {/* Glow Effect */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-xl blur opacity-25 group-hover:opacity-75 transition duration-500 group-hover:duration-200"></div>
+
+        {/* Input Container */}
+        <div className="relative flex items-center bg-secondary/80 backdrop-blur-xl border border-white/10 rounded-xl p-2 shadow-2xl transition-all duration-300">
+          <SearchIcon className="w-6 h-6 text-text-muted ml-3" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for a job title (e.g., Software Engineer)..."
-            className="w-full bg-transparent text-white placeholder-gray-400 px-4 py-2 focus:outline-none text-lg"
+            className="w-full bg-transparent text-text-main placeholder-text-muted px-4 py-3 focus:outline-none text-lg font-medium"
           />
           <button
             type="submit"
-            className="bg-accent hover:bg-sky-500 text-white px-6 py-2 rounded-md font-medium transition-colors"
+            className="bg-accent hover:brightness-110 text-white px-8 py-3 rounded-lg font-semibold transition-all shadow-lg hover:shadow-accent/20 active:scale-95"
           >
             Analyze
           </button>

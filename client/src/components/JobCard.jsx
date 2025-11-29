@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
 
 const JobCard = ({ job }) => {
   if (!job) return null;
@@ -10,46 +10,70 @@ const JobCard = ({ job }) => {
     return 'text-green-500';
   };
 
+  const getRiskLabel = (score) => {
+    if (score >= 80) return 'High Risk';
+    if (score >= 50) return 'Medium Risk';
+    return 'Low Risk';
+  };
+
   return (
-    <div className="bg-secondary rounded-xl p-8 shadow-2xl border border-slate-700 animate-fade-in">
-      <div className="flex justify-between items-start mb-6">
+    <div className="bg-secondary/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/10 animate-fade-in-up hover:border-accent/30 transition-all duration-500">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-white mb-2">{job.title}</h2>
-          <span className="text-gray-400 text-sm uppercase tracking-wider">{job.field}</span>
+          <h2 className="text-4xl font-bold text-text-main mb-2 tracking-tight">{job.title}</h2>
+          <span className="inline-block px-3 py-1 rounded-full bg-primary text-text-muted text-sm font-medium uppercase tracking-wider border border-white/5">
+            {job.field}
+          </span>
         </div>
-        <div className="text-right">
-          <div className="text-sm text-gray-400 mb-1">Automation Risk</div>
-          <div className={`text-4xl font-bold ${getRiskColor(job.automationScore)}`}>
-            {job.automationScore}%
+        <div className="flex items-center gap-4 bg-primary/50 p-4 rounded-xl border border-white/5">
+          <div className="text-right">
+            <div className="text-xs text-text-muted uppercase font-bold tracking-wider mb-1">Automation Risk</div>
+            <div className={`text-4xl font-black ${getRiskColor(job.automationScore)}`}>
+              {job.automationScore}%
+            </div>
           </div>
+          <div className={`h-12 w-1 rounded-full ${job.automationScore >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
-            <Clock className="w-5 h-5 mr-2 text-accent" />
-            Timeline Predictions
+        {/* Timeline Section */}
+        <div className="space-y-6">
+          <h3 className="text-xl font-bold text-text-main flex items-center gap-2">
+            <Clock className="w-5 h-5 text-accent" />
+            Future Timeline
           </h3>
-          <div className="space-y-4">
-            {Object.entries(job.predictions).map(([key, value]) => (
-              <div key={key} className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
-                <div className="text-accent font-bold mb-1">{key === '5y' ? '5 Years' : key === '10y' ? '10 Years' : '20 Years'}</div>
-                <p className="text-gray-300 text-sm">{value}</p>
+          <div className="relative border-l-2 border-white/10 ml-3 space-y-8 pl-8 py-2">
+            {Object.entries(job.predictions).map(([key, value], index) => (
+              <div key={key} className="relative group">
+                <div className="absolute -left-[39px] top-1 w-5 h-5 rounded-full border-4 border-secondary bg-accent group-hover:scale-125 transition-transform duration-300"></div>
+                <div className="bg-primary/50 p-4 rounded-xl border border-white/5 group-hover:border-accent/30 transition-colors">
+                  <div className="text-accent font-bold mb-1 text-sm uppercase tracking-wide">
+                    {key === '5y' ? '5 Years' : key === '10y' ? '10 Years' : '20 Years'}
+                  </div>
+                  <p className="text-text-muted text-sm leading-relaxed">{value}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
-            <CheckCircle className="w-5 h-5 mr-2 text-green-400" />
+        {/* Human Edge Section */}
+        <div className="flex flex-col">
+          <h3 className="text-xl font-bold text-text-main mb-6 flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-green-400" />
             The Human Edge
           </h3>
-          <div className="bg-slate-900/50 p-6 rounded-lg border border-slate-700 h-full">
-            <p className="text-gray-300 leading-relaxed">
-              {job.humanEdge}
+          <div className="bg-gradient-to-br from-primary/80 to-primary/40 p-8 rounded-2xl border border-white/5 h-full relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity group-hover:opacity-75"></div>
+            <p className="text-text-main/90 leading-loose text-lg relative z-10 font-medium">
+              "{job.humanEdge}"
             </p>
+            <div className="mt-6 flex items-center gap-2 text-sm text-text-muted">
+              <TrendingUp className="w-4 h-4" />
+              <span>Skills to cultivate</span>
+            </div>
           </div>
         </div>
       </div>
