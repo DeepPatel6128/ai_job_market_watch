@@ -4,20 +4,20 @@ require('dotenv').config();
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const sequelize = require('./config/database');
 const Job = require('./models/Job');
+const JobAlias = require('./models/JobAlias');
 const mockData = require('./mockData.json');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Initialize Gemini
-// Note: This will fail if GEMINI_API_KEY is not set in .env
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.use(cors());
 app.use(express.json());
 
 // Sync Database
-sequelize.sync().then(() => {
+sequelize.sync({ alter: true }).then(() => {
   console.log('Database synced successfully');
 }).catch(err => {
   console.error('Failed to sync database:', err);
@@ -30,18 +30,23 @@ app.get('/api/jobs/search', async (req, res) => {
     return res.status(400).json({ error: 'Query parameter is required' });
   }
 
-  try {
-    // 1. Check Database first (Cache Hit)
-    const cachedJob = await Job.findOne({ where: { title: query } });
+  const normalizedQuery = query.toLowerCase();
 
-    if (cachedJob) {
-      console.log(`Cache HIT for: ${query}`);
-      return res.json([cachedJob]);
+  try {
+    // 1. Unified Lookup: Check JobAlias
+    const alias = await JobAlias.findOne({
+      where: { query: normalizedQuery },
+      include: Job
+    });
+
+    if (alias && alias.Job) {
+      console.log(`Cache HIT (Alias) for: ${query} -> ${alias.Job.title}`);
+      return res.json([alias.Job]);
     }
 
     console.log(`Cache MISS for: ${query}. Calling AI...`);
 
-    // 3. Ask Gemini
+    // 2. Ask Gemini (Analysis + Canonical Title + Aliases)
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
         error: 'Server missing API Key. Please check server logs.'
@@ -52,9 +57,15 @@ app.get('/api/jobs/search', async (req, res) => {
 
     const prompt = `
       Analyze the job market for the role: "${query}".
+
+      Crucial:
+      1. Determine the "canonicalTitle" for this role (e.g., if user types "coding wizard", canonical is "Software Engineer").
+      2. Provide a list of "aliases" (synonyms, alternate titles, common search terms) for this role.
+
       Provide a JSON response with the following structure (no markdown formatting, just raw JSON):
       {
-        "title": "${query}",
+        "canonicalTitle": "Standardized Job Title",
+        "aliases": ["Title 1", "Title 2", "Title 3"],
         "field": "Inferred Industry",
         "automationScore": <number 0-100 representing risk>,
         "predictions": {
@@ -73,18 +84,55 @@ app.get('/api/jobs/search', async (req, res) => {
     // Clean up markdown code blocks if present
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
-    const jobData = JSON.parse(text);
+    const aiData = JSON.parse(text);
+    const canonicalTitle = aiData.canonicalTitle;
+    const normalizedCanonical = canonicalTitle.toLowerCase();
 
-    // 4. Save to Database (Cache Fill)
-    try {
-      await Job.create(jobData);
-      console.log(`Saved ${query} to database.`);
-    } catch (dbError) {
-      console.error('Failed to save to DB:', dbError);
+    // Ensure aliases is an array and includes the canonical title and user query
+    const aliases = Array.isArray(aiData.aliases) ? aiData.aliases : [];
+    const allAliases = new Set([
+      normalizedCanonical,
+      query.toLowerCase(),
+      ...aliases.map(a => a.toLowerCase())
+    ]);
+
+    // 3. Write Strategy
+    let job;
+
+    // Check if Job exists for canonical title (via Alias to be safe/consistent)
+    const existingAlias = await JobAlias.findOne({
+      where: { query: normalizedCanonical },
+      include: Job
+    });
+
+    if (existingAlias && existingAlias.Job) {
+      console.log(`Found existing Job for canonical: ${canonicalTitle}`);
+      job = existingAlias.Job;
+    } else {
+      console.log(`Creating NEW Job: ${canonicalTitle}`);
+      // Create Job
+      job = await Job.create({
+        title: canonicalTitle,
+        field: aiData.field,
+        automationScore: aiData.automationScore,
+        predictions: aiData.predictions,
+        humanEdge: aiData.humanEdge
+      });
     }
 
+    // Bulk Create Aliases
+    console.log(`Saving aliases: ${[...allAliases].join(', ')}`);
+    const aliasPromises = [...allAliases].map(aliasQuery =>
+      JobAlias.findOrCreate({
+        where: { query: aliasQuery },
+        defaults: { JobId: job.id }
+      })
+    );
+
+    await Promise.all(aliasPromises);
+
     // Return as an array to match the expected format
-    res.json([jobData]);
+    res.json([job]);
 
   } catch (error) {
     console.error('Error generating AI response:', error);
