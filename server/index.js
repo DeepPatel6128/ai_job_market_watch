@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const sequelize = require('./config/database');
@@ -23,8 +24,12 @@ sequelize.sync({ alter: true }).then(() => {
   console.error('Failed to sync database:', err);
 });
 
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../client/dist')));
+
 // Search endpoint
 app.get('/api/jobs/search', async (req, res) => {
+// ... (rest of the file remains unchanged until the end)
   const { query } = req.query;
   if (!query) {
     return res.status(400).json({ error: 'Query parameter is required' });
@@ -69,9 +74,9 @@ app.get('/api/jobs/search', async (req, res) => {
         "field": "Inferred Industry",
         "automationScore": <number 0-100 representing risk>,
         "predictions": {
-          "5y": "Prediction for 5 years from now",
-          "10y": "Prediction for 10 years from now",
-          "20y": "Prediction for 20 years from now"
+          "5y": { "text": "Prediction for 5 years", "score": <number 0-100 impact> },
+          "10y": { "text": "Prediction for 10 years", "score": <number 0-100 impact> },
+          "20y": { "text": "Prediction for 20 years", "score": <number 0-100 impact> }
         },
         "humanEdge": "Key human skills that will remain relevant"
       }
@@ -143,6 +148,12 @@ app.get('/api/jobs/search', async (req, res) => {
 // Get all jobs (for testing)
 app.get('/api/jobs', (req, res) => {
   res.json(mockData);
+});
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
 app.listen(PORT, () => {
