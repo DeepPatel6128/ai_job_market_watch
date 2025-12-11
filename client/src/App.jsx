@@ -39,7 +39,7 @@ function App() {
     setJobData(null);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/jobs/search?query=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/jobs/search?query=${encodeURIComponent(query)}`);
       if (!response.ok) {
         throw new Error('Failed to fetch data');
       }
