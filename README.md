@@ -1,7 +1,7 @@
-# AI Job Market Watch
-[Link Text](https://ai-job-market-watch.onrender.com/)
-A full-stack application that analyzes job markets using AI, featuring an intelligent caching layer to optimize performance and costs.
+# AI Job Market Watch 
 
+A full-stack application that analyzes job markets using AI, featuring an intelligent caching layer to optimize performance and costs. 
+[Link to site](https://ai-job-market-watch.onrender.com/)
 ## System Architecture
 
 ```mermaid
