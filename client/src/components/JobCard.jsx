@@ -1,5 +1,4 @@
-import React from 'react';
-import { AlertTriangle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { CheckCircle, Clock, TrendingUp } from 'lucide-react';
 import ImpactChart from './ImpactChart';
 
 const JobCard = ({ job }) => {

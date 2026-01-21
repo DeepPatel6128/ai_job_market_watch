@@ -32,12 +32,20 @@ exports.analyzeJob = async (query) => {
     }
   `;
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  let text = response.text();
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let text = response.text();
 
-  // Clean up markdown code blocks if present
-  text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    // Clean up markdown code blocks if present
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
-  return JSON.parse(text);
+    return JSON.parse(text);
+  } catch (error) {
+    if (error.response && error.response.status === 429) {
+      console.warn('Gemini Rate Limit Hit');
+      throw new Error('AI Service is currently overloaded (Rate Limit). Please wait a minute and try again.');
+    }
+    throw error;
+  }
 };
