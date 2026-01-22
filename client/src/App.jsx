@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Search from './components/Search';
 import JobCard from './components/JobCard';
 import Header from './components/Header';
@@ -41,7 +41,8 @@ function App() {
     try {
       const response = await fetch(`/api/jobs/search?query=${encodeURIComponent(query)}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch data');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to fetch data');
       }
       const data = await response.json();
 
@@ -51,7 +52,7 @@ function App() {
         setError('No data found for this job title. Try "Software Engineer" or "Graphic Designer".');
       }
     } catch (err) {
-      setError('Error connecting to server. Make sure the backend is running.');
+      setError(err.message || 'Error connecting to server.');
       console.error(err);
     } finally {
       setLoading(false);
