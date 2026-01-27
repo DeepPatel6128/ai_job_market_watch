@@ -15,6 +15,11 @@ exports.search = async (req, res) => {
 
   try {
     const job = await jobService.searchJob(query);
+
+    if (!job) {
+      return res.status(400).json({ error: `"${query}" does not appear to be a valid job role.` });
+    }
+
     res.json([job]);
   } catch (error) {
     console.error('Error in search controller:', error);

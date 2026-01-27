@@ -14,10 +14,14 @@ exports.analyzeJob = async (query) => {
     Analyze the job market for the role: "${query}".
 
     Crucial:
-    1. Determine the "canonicalTitle" for this role (e.g., if user types "coding wizard", canonical is "Software Engineer").
-    2. Provide a list of "aliases" (synonyms, alternate titles, common search terms) for this role.
+    1. Determine if the query is a valid job role.
+    2. If valid, determine the "canonicalTitle" (e.g., "coding wizard" -> "Software Engineer").
+    3. Provide "aliases" (synonyms, alternate titles).
 
-    Provide a JSON response with the following structure (no markdown formatting, just raw JSON):
+    CRITICAL VALIDATION:
+    If the query is NOT a valid job role (e.g., "hello", "random text", "testing", "who is"), return STRICTLY an empty JSON object: {}.
+
+    If Valid, provide a JSON response with this structure:
     {
       "canonicalTitle": "Standardized Job Title",
       "aliases": ["Title 1", "Title 2", "Title 3"],

@@ -20,6 +20,13 @@ exports.searchJob = async (query) => {
 
   // 2. Ask Gemini
   const aiData = await geminiService.analyzeJob(query);
+
+  // Check if AI returned an empty object (invalid job)
+  if (!aiData || !aiData.canonicalTitle) {
+    console.warn(`AI determined query "${query}" is INVALID.`);
+    return null;
+  }
+
   const canonicalTitle = aiData.canonicalTitle;
   const normalizedCanonical = canonicalTitle.toLowerCase();
 
